@@ -1,25 +1,112 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, { useState, useRef, useEffect } from 'react';
+import Grid from './Grid'
 import './App.css';
 
+const LOCAL_OFFSET = 0
+localStorage.setItem(LOCAL_OFFSET, 0)
+
+const regex1 = /---offset---/
+const regex2 = /---q---/
+let state_display = false
+const giphy_api_key = '' // Pon aquí tu API KEY de giphy -> https://developers.giphy.com/
+const lang = 'es'
+
+const giphyApiUrl = `https://api.giphy.com/v1/gifs/search?api_key=${giphy_api_key}&q=---q---&limit=12&offset=---offset---&rating=g&lang=${lang}`
+
 function App() {
+  const [gifs, setGifs] = useState([])
+  const inputNameRef = useRef()
+  const buttonNameRef = useRef()
+  const loadingNameRef = useRef()
+  const divNameRef = useRef()
+
+  useEffect(() => {
+    if (gifs.length) {
+      buttonNameRef.current.style.display = 'block'
+      divNameRef.current.style.display = 'none'
+    }
+    console.log('actualizado')
+  }, [gifs])
+
+  async function fetch_gifs() {
+    setGifs([])
+    let offset = Number(localStorage.getItem(LOCAL_OFFSET))
+    let url = giphyApiUrl.replace(regex1, offset)
+    url = url.replace(regex2, inputNameRef.current.value)
+
+    loadingNameRef.current.style.display = 'block'
+    buttonNameRef.current.style.display = 'none'
+    divNameRef.current.style.display = 'block'
+
+    setTimeout(
+      await fetch(url)
+        .then(res => res.json())
+        .then(response => {
+          console.log(offset)
+          const { data } = response
+          const gifs_ = data.map(image => {
+            image.images.copied = false
+            return image.images.downsized_medium.url
+          })
+          //console.log(gifs_)
+          setGifs(gifs_)
+            
+          localStorage.setItem(LOCAL_OFFSET, Number(offset) + 12)
+          loadingNameRef.current.style.display = 'none'
+          buttonNameRef.current.style.display = 'block'
+          divNameRef.current.style.display = 'none'
+        }), 1000)
+  }
+
+  function clickBtnNuevosGifs(e) {
+    e.preventDefault()
+    fetch_gifs()
+    // setGifs(data)
+  }
+
+  function handleKeyDown(event) {
+    if (event.key === 'Enter') {
+      fetch_gifs()
+    } else {
+      buttonNameRef.current.style.display = 'none'
+    }
+  }
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+      <section className="App-content">
+        <br />
+        <h3>¿Qué GIF buscas?</h3>
+        <table>
+          <tbody>
+            <tr>
+              <td>
+                <input type="text" className="p-2" ref={inputNameRef} onKeyDown={handleKeyDown}
+                  autoFocus />
+              </td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <td>
+                <div ref={loadingNameRef} className="spinner-border" role="status" style={{ display: 'none' }}>
+                  <span className="sr-only">Cargando...</span>
+                </div>
+              </td>
+              <td>&nbsp;&nbsp;&nbsp;</td>
+              <td>
+                <div ref={divNameRef}>
+
+                </div>
+                <button ref={buttonNameRef} onClick={clickBtnNuevosGifs} className="btn btn-primary" style={{ display: state_display ? 'block' : 'none' }}>&nbsp;Traer&nbsp;12&nbsp;más&nbsp;(Handle)&nbsp;</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div className="container align-center" style={{ textAlign: 'center' }}>
+          <Grid gifs={gifs} />
+        </div>
+
+      </section>
+    </div >
   );
 }
 
