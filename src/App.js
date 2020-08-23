@@ -19,6 +19,7 @@ function App() {
   const buttonNameRef = useRef()
   const loadingNameRef = useRef()
   const divNameRef = useRef()
+  const divErrorNameRef = useRef()
 
   useEffect(() => {
     if (gifs.length) {
@@ -37,24 +38,37 @@ function App() {
     loadingNameRef.current.style.display = 'block'
     buttonNameRef.current.style.display = 'none'
     divNameRef.current.style.display = 'block'
+    divErrorNameRef.current.style.display = 'none'
 
     setTimeout(
       await fetch(url)
         .then(res => res.json())
         .then(response => {
-          console.log(offset)
-          const { data } = response
-          const gifs_ = data.map(image => {
-            image.images.copied = false
-            return image.images.downsized_medium.url
-          })
-          //console.log(gifs_)
-          setGifs(gifs_)
-            
-          localStorage.setItem(LOCAL_OFFSET, Number(offset) + 12)
-          loadingNameRef.current.style.display = 'none'
-          buttonNameRef.current.style.display = 'block'
-          divNameRef.current.style.display = 'none'
+          if (response.message) {
+            console.log(response.message)
+            loadingNameRef.current.style.display = 'none'
+            divErrorNameRef.current.style.display = 'block'
+            divErrorNameRef.current.innerHTML = "Respuesta de API de giphy.com:"
+             + "<br /><b>" + response.message + "</b>"
+             + "<br />Visite: <a href='https://developers.giphy.com' target='_blank'>developers.giphy.com</a>"
+             + "<br /><br />Dudas sobre este script <a href='https://github.com/alejandrofca/busqueda-gifs-en-giphy-react' target='_blank'>en este repositorio Github de Alejandro FCA</a>"
+          } else {
+            // Invalid authentication credentials
+            console.log("url: " + url)
+            console.log(response)
+            console.log(offset)
+            const { data } = response
+            const gifs_ = data.map(image => {
+              image.images.copied = false
+              return image.images.downsized_medium.url
+            })
+            //console.log(gifs_)
+            setGifs(gifs_)
+
+            localStorage.setItem(LOCAL_OFFSET, Number(offset) + 12)
+            buttonNameRef.current.style.display = 'block'
+            divNameRef.current.style.display = 'none'
+          }
         }), 1000)
   }
 
@@ -102,6 +116,9 @@ function App() {
         </table>
 
         <div className="container align-center" style={{ textAlign: 'center' }}>
+          <div ref={divErrorNameRef} className="alert alert-warning alert-api-error" role="status" style={{ display: 'none' }}>
+            
+          </div>
           <Grid gifs={gifs} />
         </div>
 

@@ -11,3 +11,10 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.pointer { cursor: pointer; }
+.alert-api-error {
+  margin-top: 20px;
+  font-size: 14px;
+  padding: 5px;
+}
