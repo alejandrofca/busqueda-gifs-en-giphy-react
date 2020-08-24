@@ -68,6 +68,7 @@ function App() {
             localStorage.setItem(LOCAL_OFFSET, Number(offset) + 12)
             buttonNameRef.current.style.display = 'block'
             divNameRef.current.style.display = 'none'
+            loadingNameRef.current.style.display = 'none'
           }
         }), 1000)
   }
@@ -114,10 +115,12 @@ function App() {
             </tr>
           </tbody>
         </table>
-
+        <div style={{ fontSize: "12px" }}>
+          Código en <a href="https://github.com/alejandrofca/busqueda-gifs-en-giphy-react" rel="noopener noreferer" target="_blank" >Github</a>
+        </div>
         <div className="container align-center" style={{ textAlign: 'center' }}>
           <div ref={divErrorNameRef} className="alert alert-warning alert-api-error" role="status" style={{ display: 'none' }}>
-            
+
           </div>
           <Grid gifs={gifs} />
         </div>

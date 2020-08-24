@@ -25,6 +25,6 @@ En el shell de su preferencia, siga estos comandos:
 
 Para producción:
 
-* npm build
+* npm run build
 
 y cargue en su servidor web el contenido del directorio 'build' que se produce. 
